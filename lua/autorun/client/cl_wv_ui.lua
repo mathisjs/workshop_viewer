@@ -1,3 +1,5 @@
+WV = WV or {}
+
 WV.FillAddons = function(list)
     WV.AddonCache = list or {}
     for _, addon in ipairs(WV.AddonCache) do

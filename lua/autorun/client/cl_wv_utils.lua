@@ -1,3 +1,5 @@
+WV = WV or {}
+
 function WV.ReadCompressedTable()
     local len = net.ReadUInt(32)
     if len == 0 then return nil end

@@ -1,3 +1,5 @@
+WV = WV or {}
+
 function WV.GetHTML()
     return [[
 <!DOCTYPE html>

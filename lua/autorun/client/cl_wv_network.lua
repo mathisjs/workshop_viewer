@@ -1,3 +1,5 @@
+WV = WV or {}
+
 local function handleStatus(msg, level)
     WV.SendEvent("status", { text = msg, level = level or "info" })
 end

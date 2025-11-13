@@ -1,3 +1,5 @@
+WV = WV or {}
+
 net.Receive("WV_RequestAddons", function(_, ply)
     if not WV.Allowed(ply) then return end
     local addons = WV.BuildAddonList()
