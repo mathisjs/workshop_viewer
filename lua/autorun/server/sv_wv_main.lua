@@ -1,0 +1,8 @@
+util.AddNetworkString("WV_RequestAddons")
+util.AddNetworkString("WV_Addons")
+util.AddNetworkString("WV_RequestList")
+util.AddNetworkString("WV_List")
+util.AddNetworkString("WV_RequestFile")
+util.AddNetworkString("WV_FileStart")
+util.AddNetworkString("WV_FileChunk")
+util.AddNetworkString("WV_Error")
