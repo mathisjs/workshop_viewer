@@ -45,7 +45,7 @@ local function openViewer()
 
     local f = vgui.Create("DFrame")
     f:SetTitle(" ")
-    f:SetSize(math.min(ScrW()*0.9, 1400), math.min(ScrH()*0.9, 900))
+    f:SetSize(math.min(ScrW()*0.95, 1700), math.min(ScrH()*0.95, 1000))
     f:Center()
     f:MakePopup()
     WV.Frame = f

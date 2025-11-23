@@ -11,11 +11,13 @@ function WV.GetHTML()
 html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a0f;color:#f5f5f5;overflow:hidden}
 body{font-size:14px;font-weight:600}
 .wv-app{display:flex;gap:0;padding:16px;height:100%;background:linear-gradient(145deg,#0c0c15,#09090d)}
-.wv-col{display:flex;flex-direction:column;border-radius:16px;padding:16px;background:#1b1b24;border:1px solid #2b2b37;box-shadow:0 18px 45px rgba(0,0,0,0.45);min-width:150px}
+.wv-col{display:flex;flex-direction:column;flex:1 1 0;border-radius:16px;padding:16px;background:#1b1b24;border:1px solid #2b2b37;box-shadow:0 18px 45px rgba(0,0,0,0.45);min-width:150px;min-height:0}
 .wv-col h2{margin:0 0 12px;font-size:16px;letter-spacing:1px;text-transform:uppercase;color:#f0f0ff}
 .wv-toolbar{display:flex;gap:10px;margin-bottom:12px}
-.wv-toolbar input{flex:1;border:none;border-radius:12px;padding:10px 14px;background:#232331;color:#f6f6ff;font-weight:600}
-button{border:none;border-radius:12px;padding:10px 16px;background:#4141ff;color:#fff;font-weight:700;cursor:pointer;transition:background .2s,transform .2s}
+.wv-toolbar input{flex:1;border:none;border-radius:12px;padding:10px 14px;background:#232331;color:#f6f6ff;font-weight:600;outline:none}
+.wv-toolbar input:focus{box-shadow:none;outline:none}
+button{border:none;border-radius:12px;padding:10px 16px;background:#4141ff;color:#fff;font-weight:700;cursor:pointer;transition:background .2s,transform .2s;outline:none}
+button:focus{outline:none;box-shadow:none}
 button:hover{background:#5d5dff}
 button:active{transform:scale(0.97)}
 .wv-list{flex:1;overflow-y:auto;border-radius:12px;background:#15151d}
@@ -29,10 +31,15 @@ button:active{transform:scale(0.97)}
 .wv-files .wv-item{flex-direction:row;justify-content:space-between;align-items:center}
 .wv-files .wv-item span{font-weight:600}
 .wv-files .wv-item small{color:#8d8db3;font-weight:500}
+.wv-viewer{min-height:0}
 .wv-viewer-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
 .wv-viewer-bar .wv-path{flex:1;color:#d9daf9;font-size:13px}
 .wv-viewer-bar .wv-actions{display:flex;gap:8px}
-#code-view{flex:1;background:#0d0d15;border-radius:14px;border:1px solid #272738;padding:14px;overflow:auto;font-family:'Consolas','Fira Code',monospace;font-size:13px;line-height:1.6;user-select:text}
+#code-view{position:relative;flex:1;background:#0d0d15;border-radius:14px;border:1px solid #272738;overflow:hidden;min-height:300px;min-width:0}
+#code-view,#code-view *{user-select:text}
+.wv-editor-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9da2ff;font-weight:700;font-size:13px;background:linear-gradient(145deg,rgba(21,21,31,0.95),rgba(12,12,20,0.95));letter-spacing:1px;text-transform:uppercase}
+#code-view .monaco-editor,#code-view .monaco-editor .margin{background-color:transparent!important}
+#code-view .monaco-editor .margin{border-right:1px solid rgba(255,255,255,0.06)}
 .wv-status{margin-top:12px;min-height:24px;color:#9da2ff;font-size:12px}
 .wv-status.error{color:#ff6d7a}
 .wv-status.success{color:#6bffb3}
@@ -41,13 +48,6 @@ button:active{transform:scale(0.97)}
 .wv-resizer{width:6px;cursor:col-resize;position:relative;flex-shrink:0;margin:0 6px}
 .wv-resizer::before{content:'';position:absolute;top:0;bottom:0;left:2px;width:2px;background:rgba(255,255,255,0.1);border-radius:2px;transition:background .2s}
 .wv-resizer:hover::before,.wv-resizer.active::before{background:rgba(65,65,255,0.5)}
-k{color:#c792ea;font-weight:700}
-t{color:#c3e88d;font-weight:400}
-c{color:#546e7a;font-style:italic;font-weight:400}
-n{color:#f78c6c;font-weight:400}
-b{color:#ffcb6b;font-weight:400}
-d{display:block}
-u,s{text-decoration:none;font-style:normal}
 </style>
 </head>
 <body>
@@ -75,110 +75,67 @@ u,s{text-decoration:none;font-style:normal}
                 <button id="workshop-btn">Workshop</button>
             </div>
         </div>
-        <div id="code-view"></div>
+        <div id="code-view"><div class="wv-editor-loading" id="editor-loading">Loading editor...</div></div>
         <div class="wv-status" id="status-bar"></div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
 (function(){
-    const state={addons:[],currentMount:'',currentAddon:null,currentDir:'',dirs:[],files:[],fileText:'',filePath:'',statusTimer:null,fileExt:''};
-    const els={addons:document.getElementById('addon-list'),search:document.getElementById('addon-search'),browserTitle:document.getElementById('browser-title'),browserPath:document.getElementById('browser-path'),dirList:document.getElementById('dir-list'),viewerPath:document.getElementById('viewer-path'),codeView:document.getElementById('code-view'),status:document.getElementById('status-bar'),copy:document.getElementById('copy-btn'),workshop:document.getElementById('workshop-btn'),refresh:document.getElementById('refresh-btn'),colAddons:document.getElementById('col-addons'),colBrowser:document.getElementById('col-browser'),colViewer:document.getElementById('col-viewer')};
-
-    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/ /g,'&nbsp;').replace(/\t/g,'&nbsp;&nbsp;&nbsp;&nbsp;');}
-
-    function highlightLua(code){
-        var kw=['and','break','do','else','elseif','end','false','for','function','if','in','local','nil','not','or','repeat','return','then','true','until','while'];
-        var bi=['pairs','ipairs','print','tonumber','tostring','type','table','string','math'];
-        var lines=code.split('\n');
-        var result='';
-        for(var i=0;i<lines.length;i++){
-            var line=lines[i];
-            var cm=line.indexOf('--');
-            if(cm>=0){
-                var pre=esc(line.substring(0,cm));
-                var com=esc(line.substring(cm));
-                result+='<d>'+pre+'<c>'+com+'</c></d>';
-            }else{
-                var hl=line;
-                var marks=[];
-                var str1=/("([^"\\]|\\.)*")/g;
-                var match;
-                while((match=str1.exec(line))!==null){
-                    marks.push({pos:match.index,len:match[0].length,type:'s',txt:match[0]});
-                }
-                var str2=/'([^'\\]|\\.)*'/g;
-                while((match=str2.exec(line))!==null){
-                    marks.push({pos:match.index,len:match[0].length,type:'s',txt:match[0]});
-                }
-                marks.sort(function(a,b){return a.pos-b.pos;});
-                var output='';
-                var pos=0;
-                for(var m=0;m<marks.length;m++){
-                    var mark=marks[m];
-                    var before=line.substring(pos,mark.pos);
-                    output+=highlightPlainLua(before,kw,bi);
-                    output+='<t>'+esc(mark.txt)+'</t>';
-                    pos=mark.pos+mark.len;
-                }
-                output+=highlightPlainLua(line.substring(pos),kw,bi);
-                result+='<d>'+output+'</d>';
-            }
-        }
-        return result;
-    }
-
-    function highlightPlainLua(txt,kw,bi){
-        var out=esc(txt);
-        for(var k=0;k<kw.length;k++){
-            var w=kw[k];
-            out=out.replace(new RegExp('\\b'+w+'\\b','g'),'<k>'+w+'</k>');
-        }
-        for(var i=0;i<bi.length;i++){
-            var w=bi[i];
-            out=out.replace(new RegExp('\\b'+w+'\\b','g'),'<b>'+w+'</b>');
-        }
-        out=out.replace(/\b(\d+\.?\d*)\b/g,'<n>$1</n>');
-        return out;
-    }
-
-    function highlightJSON(code){
-        var lines=code.split('\n');
-        var result='';
-        for(var i=0;i<lines.length;i++){
-            var line=lines[i];
-            var h=esc(line);
-            h=h.replace(/\b(true|false|null)\b/g,'<k>$1</k>');
-            h=h.replace(/\b(\d+\.?\d*)\b/g,'<n>$1</n>');
-            result+='<d>'+h+'</d>';
-        }
-        return result;
-    }
-
-    function highlightCode(code,ext){
-        if(!code)return'';
-        ext=(ext||'').toLowerCase();
-        if(ext==='lua')return highlightLua(code);
-        if(ext==='json')return highlightJSON(code);
-        var lines=code.split('\n');
-        var result='';
-        for(var i=0;i<lines.length;i++){
-            result+='<d>'+esc(lines[i])+'</d>';
-        }
-        return result;
-    }
+    const EMPTY_TEXT="-- you need to select one file !\n-- Workshop Viewer";
+    const state={addons:[],currentMount:'',currentAddon:null,currentDir:'',dirs:[],files:[],fileText:'',filePath:'',statusTimer:null,fileExt:'',editor:null,pendingContent:null};
+    const els={addons:document.getElementById('addon-list'),search:document.getElementById('addon-search'),browserTitle:document.getElementById('browser-title'),browserPath:document.getElementById('browser-path'),dirList:document.getElementById('dir-list'),viewerPath:document.getElementById('viewer-path'),codeView:document.getElementById('code-view'),status:document.getElementById('status-bar'),copy:document.getElementById('copy-btn'),workshop:document.getElementById('workshop-btn'),refresh:document.getElementById('refresh-btn'),colAddons:document.getElementById('col-addons'),colBrowser:document.getElementById('col-browser'),colViewer:document.getElementById('col-viewer'),editorLoading:document.getElementById('editor-loading')};
 
     function callNative(name){if(window.wv&&typeof window.wv[name]==='function'){const args=Array.prototype.slice.call(arguments,1);window.wv[name].apply(window.wv,args);}}
+
+    function extFromPath(path){if(!path)return'';const idx=path.lastIndexOf('.');return idx>=0?path.substring(idx+1).toLowerCase():'';}
+    function languageForExt(ext){const map={lua:'lua',json:'json',md:'markdown',txt:'plaintext',cfg:'ini',ini:'ini',log:'ini',vmt:'ini',vdf:'ini',vmf:'plaintext'};return map[ext]||'plaintext';}
+
+    function setEditorContent(text,ext){
+        state.fileText=text||'';
+        state.fileExt=(ext||state.fileExt||'')||'';
+        if(!state.editor){
+            state.pendingContent={text:state.fileText,ext:state.fileExt};
+            return;
+        }
+        const lang=languageForExt(state.fileExt);
+        const model=state.editor.getModel();
+        if(model){monaco.editor.setModelLanguage(model,lang);}
+        state.editor.setValue(state.fileText);
+    }
+
+    function bootEditor(){
+        if(typeof require==='undefined'){
+            if(els.editorLoading){els.editorLoading.textContent='Editor unavailable';}
+            callNative('Ready');
+            return;
+        }
+        require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'}});
+        window.MonacoEnvironment={getWorkerUrl:function(){const src="self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/'};importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/base/worker/workerMain.js');";const blob=new Blob([src],{type:'text/javascript'});return URL.createObjectURL(blob);}};
+        require(['vs/editor/editor.main'],function(){
+            if(els.editorLoading){els.editorLoading.remove();}
+            state.editor=monaco.editor.create(els.codeView,{value:'',language:'plaintext',theme:'vs-dark',readOnly:true,minimap:{enabled:false},automaticLayout:true,scrollBeyondLastLine:false,lineNumbers:'on',fontSize:13,fontFamily:"'Fira Code', Consolas, 'Segoe UI Mono', monospace",renderWhitespace:'none',overviewRulerLanes:0});
+            if(state.pendingContent){setEditorContent(state.pendingContent.text,state.pendingContent.ext);state.pendingContent=null;}
+            state.editor.layout();
+            callNative('Ready');
+        });
+    }
+
     function setAddons(list){state.addons=Array.isArray(list)?list:[];renderAddons();}
     function renderAddons(){const filter=(els.search.value||'').toLowerCase();els.addons.innerHTML='';const frag=document.createDocumentFragment();state.addons.filter(addon=>{if(!filter)return true;const hay=((addon.title||addon.file||'')+' '+(addon.wsid||'')).toLowerCase();return hay.includes(filter);}).forEach(addon=>{const div=document.createElement('div');div.className='wv-item'+(addon.mount===state.currentMount?' active':'');const sizeText=addon.size_human||'';const updatedText=addon.updated_human||'';div.innerHTML=`<span class="wv-title">${addon.title||addon.file||'Addon'}</span><span class="wv-meta">WSID: ${addon.wsid||'?'} | ${sizeText} | ${updatedText}</span>`;div.addEventListener('click',()=>selectAddon(addon));frag.appendChild(div);});els.addons.appendChild(frag);}
     function selectAddon(addon){state.currentMount=addon.mount||'';state.currentAddon=addon;state.currentDir='';state.dirs=[];state.files=[];state.fileText='';renderAddons();renderDirectory();renderFile();callNative('SelectAddon',addon.mount||'',addon.title||addon.file||'Addon',addon.wsid||'');}
     function upPath(path){if(!path)return'';const segments=path.split('/').filter(Boolean);if(!segments.length)return'';segments.pop();return segments.length?segments.join('/')+'/':'';}
     function renderDirectory(){els.browserTitle.textContent=state.currentAddon?(state.currentAddon.title||state.currentAddon.file||'Files'):'Files';els.browserPath.textContent=state.currentDir===''?'/':'/'+state.currentDir;els.dirList.innerHTML='';const frag=document.createDocumentFragment();if(state.currentDir!==''){const up=document.createElement('div');up.className='wv-item';up.innerHTML='<span>..</span><small>Back</small>';up.addEventListener('click',()=>changeDirectory(upPath(state.currentDir)));frag.appendChild(up);} (state.dirs||[]).forEach(name=>{const item=document.createElement('div');item.className='wv-item';item.innerHTML=`<span>${name}/</span><small>Folder</small>`;item.addEventListener('click',()=>{const next=(state.currentDir||'')+name+'/';changeDirectory(next);});frag.appendChild(item);});(state.files||[]).forEach(file=>{const item=document.createElement('div');item.className='wv-item';item.innerHTML=`<span>${file.name}</span><small>Open</small>`;item.addEventListener('click',()=>{state.fileExt=file.ext||'';callNative('RequestFile',state.currentMount,file.path);showStatus('Loading '+file.name+' ...');});frag.appendChild(item);});els.dirList.appendChild(frag);}
     function changeDirectory(path){state.currentDir=path||'';renderDirectory();callNative('RequestDirectory',state.currentMount,path||'');}
-    function renderFile(){els.viewerPath.textContent=state.filePath||'No file selected';els.codeView.innerHTML=highlightCode(state.fileText,state.fileExt);}
+    function renderFile(){
+        const hasFile=!!state.filePath;
+        els.viewerPath.textContent=hasFile?state.filePath:'No file selected';
+        setEditorContent(hasFile?state.fileText:EMPTY_TEXT,state.fileExt);
+    }
     function updateDirectory(payload){state.currentMount=payload.mount||state.currentMount;state.currentDir=payload.dir||'';state.dirs=payload.dirs||[];state.files=payload.files||[];if(payload.wsid){state.currentAddon=state.currentAddon||{};state.currentAddon.wsid=payload.wsid;}if(payload.addon){state.currentAddon=state.currentAddon||{};state.currentAddon.title=payload.addon;}renderDirectory();}
-    function updateFile(payload){state.fileText=payload.text||'';state.filePath=payload.path||'';renderFile();}
+    function updateFile(payload){state.fileText=payload.text||'';state.filePath=payload.path||'';state.fileExt=extFromPath(state.filePath);renderFile();}
     function showStatus(text,level){if(state.statusTimer){clearTimeout(state.statusTimer);state.statusTimer=null;}els.status.textContent=text||'';els.status.className='wv-status'+(level?' '+level:'');if(text){state.statusTimer=setTimeout(()=>{els.status.textContent='';els.status.className='wv-status';},4000);}}
-    window.WVReceive=function(msg){if(!msg||!msg.event)return;const payload=msg.payload||{};switch(msg.event){case'addons':setAddons(payload);break;case'directory':updateDirectory(payload);break;case'file':updateFile(payload)}};
+    window.WVReceive=function(msg){if(!msg||!msg.event)return;const payload=msg.payload||{};switch(msg.event){case'addons':setAddons(payload);break;case'directory':updateDirectory(payload);break;case'file':updateFile(payload);break;case'status':showStatus(payload.text,payload.level);break;}};
 
     const cols=[els.colAddons,els.colBrowser,els.colViewer];
     const resizers=document.querySelectorAll('.wv-resizer');
@@ -246,9 +203,9 @@ u,s{text-decoration:none;font-style:normal}
 
     els.search.addEventListener('input',renderAddons);
     els.refresh.addEventListener('click',()=>callNative('RefreshAddons'));
-    els.copy.addEventListener('click',()=>callNative('CopyText',state.fileText||''));
+    els.copy.addEventListener('click',()=>{const txt=state.editor?state.editor.getValue():state.fileText||'';callNative('CopyText',txt);});
     els.workshop.addEventListener('click',()=>{if(state.currentAddon&&state.currentAddon.wsid){callNative('OpenWorkshop',state.currentAddon.wsid);}});
-    document.addEventListener('DOMContentLoaded',()=>{initSizes();callNative('Ready');});
+    document.addEventListener('DOMContentLoaded',()=>{initSizes();bootEditor();});
     initSizes();
 })();
 </script>
