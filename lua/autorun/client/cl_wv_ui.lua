@@ -1,15 +1,13 @@
 WV = WV or {}
 
 WV.FillAddons = function(list)
-    WV.AddonCache = list or {}
-    for _, addon in ipairs(WV.AddonCache) do
+    list = list or {}
+    for _, addon in ipairs(list) do
         if not addon.mount or addon.mount == "" then
             addon.mount = addon.file or addon.title or addon.wsid or ""
         end
-        addon.size_human = WV.FormatBytes(addon.size)
-        addon.updated_human = WV.FormatDate(addon.updated)
     end
-    WV.SendEvent("addons", WV.AddonCache)
+    WV.SendEvent("addons", list)
 end
 
 WV.MountDir = function(payload)
@@ -17,11 +15,6 @@ WV.MountDir = function(payload)
     if payload.mount and payload.mount ~= "" then
         WV.CurrentBase = payload.mount
     end
-    if payload.base and payload.base ~= "" then
-        WV.CurrentSearch = payload.base
-    end
-    payload.addon = WV.CurrentAddonLabel or "Addon"
-    payload.wsid = WV.CurrentWSID or ""
     WV.SendEvent("directory", payload)
 end
 
@@ -29,7 +22,6 @@ WV.ShowFile = function(text, rel)
     local pathLabel = rel or WV.PendingPath or "Unknown file"
     WV.PendingPath = nil
     WV.SendEvent("file", {
-        addon = WV.CurrentAddonLabel or "Addon",
         text = text or "",
         path = pathLabel
     })
@@ -45,7 +37,7 @@ local function openViewer()
 
     local f = vgui.Create("DFrame")
     f:SetTitle(" ")
-    f:SetSize(math.min(ScrW()*0.95, 1700), math.min(ScrH()*0.95, 1000))
+    f:SetSize(math.min(ScrW()*0.9, 1600), math.min(ScrH()*0.9, 900))
     f:Center()
     f:MakePopup()
     WV.Frame = f
@@ -70,8 +62,6 @@ local function openViewer()
     local function selectAddon(mountId, label, wsid)
         if not mountId or mountId == "" then return end
         WV.CurrentBase = mountId
-        WV.CurrentAddonLabel = label or "Addon"
-        WV.CurrentWSID = wsid or ""
         WV.PendingPath = nil
         WV.RequestDirectory(mountId, "")
     end

@@ -96,3 +96,25 @@ net.Receive("WV_RequestFile", function(_, ply)
         net.Send(ply)
     end
 end)
+
+net.Receive("WV_RequestAllImages", function(_, ply)
+    if not WV.Allowed(ply) then return end
+    
+    local addonList = WV.BuildAddonList()
+    local count = 0
+    for _, addon in ipairs(addonList) do
+        if addon.wsid and addon.wsid ~= "" and addon.wsid ~= "0" then
+            count = count + 1
+            local numWsid = tonumber(addon.wsid)
+            steamworks.FileInfo(numWsid, function(data)
+                if not IsValid(ply) then return end
+                if data and data.previewurl then
+                    net.Start("WV_Image")
+                        net.WriteString(addon.wsid)
+                        net.WriteString(data.previewurl)
+                    net.Send(ply)
+                end
+            end)
+        end
+    end
+end)

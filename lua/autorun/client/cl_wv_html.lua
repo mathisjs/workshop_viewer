@@ -7,354 +7,311 @@ function WV.GetHTML()
 <head>
 <meta charset="utf-8" />
 <style>
-*{box-sizing:border-box;user-select:none}
-html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',Tahoma,sans-serif;background:#191117;color:#FFD1D9;overflow:hidden}
-body{font-size:14px;font-weight:600}
-.wv-app{display:flex;gap:0;padding:16px;height:100%;background:#191117}
-.wv-col{display:flex;flex-direction:column;flex:1 1 0;border-radius:12px;padding:16px;background:#21121D;border:1px solid #2b1d25;box-shadow:0 14px 34px rgba(0,0,0,0.45);min-width:150px;min-height:0}
-.wv-col h2{margin:0 0 12px;font-size:15px;letter-spacing:0.5px;text-transform:uppercase;color:#FFD1D9}
-.wv-toolbar{display:flex;gap:10px;margin-bottom:12px}
-.wv-toolbar input{flex:1;border:1px solid #34212a;border-radius:10px;padding:10px 14px;background:#181017;color:#FFD1D9;font-weight:600;outline:none}
-.wv-toolbar input:focus{box-shadow:0 0 0 1px #ff7aaa;outline:none;border-color:#ff7aaa;background:#1d0f18}
-button{border:1px solid #34212a;border-radius:10px;padding:10px 16px;background:#25141d;color:#FFD1D9;font-weight:700;cursor:pointer;transition:background .15s,transform .15s,border-color .15s;outline:none}
-button:focus{outline:none;box-shadow:none}
-button:hover{background:#2c1823;border-color:#ff7aaa}
-button:active{transform:scale(0.98);background:#1e0f17}
-.wv-list{flex:1;overflow-y:auto;border-radius:10px;background:#1a0f15;border:1px solid #2b1b22}
-.wv-item{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;display:flex;flex-direction:column;gap:4px}
-.wv-item:last-child{border-bottom:none}
-.wv-item:hover{background:rgba(255,122,170,0.08)}
-.wv-item.active{background:rgba(255,122,170,0.16);border-color:rgba(255,122,170,0.28)}
-.wv-item .wv-title{color:#FFD1D9;font-size:14px}
-.wv-item .wv-meta{color:#d9a7b2;font-size:12px;font-weight:500}
-.wv-addon-header{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.wv-addon-actions{display:flex;gap:6px}
-.wv-addon-body{margin-top:10px;padding:10px;border-radius:8px;background:#21121D;border:1px solid #2f1c24}
-.wv-pathline{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#d9a7b2;font-size:12px;font-weight:600}
-.wv-files{display:flex;flex-direction:column;gap:6px}
-.wv-file{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid #2b1b22;background:#1b1117;cursor:pointer}
-.wv-file:hover{background:#21121d;border-color:#ff7aaa}
-.wv-file span{color:#FFD1D9;font-weight:600}
-.wv-file small{color:#c78ea1;font-weight:500}
-.wv-breadcrumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.wv-crumb{padding:6px 10px;border-radius:8px;font-size:12px;border:1px solid #34212a;background:#1b1117;cursor:pointer}
-.wv-crumb:hover{border-color:#ff7aaa;background:#21121d}
-.wv-crumb.active{border-color:#ff7aaa;background:rgba(255,122,170,0.16)}
-.wv-viewer{min-height:0}
-.wv-viewer-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
-.wv-viewer-bar .wv-path{flex:1;color:#d9a7b2;font-size:13px}
-.wv-viewer-bar .wv-actions{display:flex;gap:8px}
-#code-view{position:relative;flex:1;background:#191117;border-radius:12px;border:1px solid #2b1d25;overflow:hidden;min-height:300px;min-width:0}
-#code-view,#code-view *{user-select:text}
-.wv-editor-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#FFD1D9;font-weight:700;font-size:13px;background:linear-gradient(145deg,rgba(25,17,23,0.96),rgba(33,18,29,0.96));letter-spacing:1px;text-transform:uppercase}
-#code-view .monaco-editor,#code-view .monaco-editor .margin{background-color:transparent!important}
-#code-view .monaco-editor .margin{border-right:1px solid rgba(255,255,255,0.04)}
-.wv-status{margin-top:12px;min-height:24px;color:#d9a7b2;font-size:12px}
-.wv-status.error{color:#ff6d7a}
-.wv-status.success{color:#6bffb3}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:rgba(255,209,217,0.25);border-radius:6px}
-.wv-resizer{width:6px;cursor:col-resize;position:relative;flex-shrink:0;margin:0 6px}
-.wv-resizer::before{content:'';position:absolute;top:0;bottom:0;left:2px;width:2px;background:rgba(255,255,255,0.08);border-radius:2px;transition:background .2s}
-.wv-resizer:hover::before,.wv-resizer.active::before{background:rgba(255,111,159,0.6)}
+*{box-sizing:border-box;user-select:none;scrollbar-width:thin;scrollbar-color:rgba(255,209,217,0.15) transparent}
+html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:#0f0d0e;color:#FFD1D9;overflow:hidden;font-size:12px}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(255,209,217,0.2);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+
+.app{display:flex;height:100%;background:#0f0d0e}
+.sidebar{width:260px;display:flex;flex-direction:column;border-right:1px solid rgba(255,209,217,0.08);background:#141113;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;background:#0f0d0e}
+
+.toolbar{padding:8px 10px;display:flex;gap:6px;border-bottom:1px solid rgba(255,209,217,0.08);background:#1a1416;align-items:center}
+.search-box{flex:1;position:relative}
+.search-box input{width:100%;background:#0f0d0e;border:1px solid rgba(255,209,217,0.15);border-radius:4px;padding:5px 10px;color:#FFD1D9;font-family:inherit;font-size:11px;outline:none;transition:all .15s}
+.search-box input:focus{border-color:#ff7aaa;background:#141113}
+.btn{background:#1f1619;border:1px solid rgba(255,209,217,0.15);color:#FFD1D9;border-radius:3px;padding:4px 8px;cursor:pointer;font-size:11px;transition:all .1s;white-space:nowrap}
+.btn:hover:not(:disabled){background:#2a1b1f;border-color:#ff7aaa}
+.btn:disabled{opacity:0.3;cursor:not-allowed}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn-icon{padding:4px 6px;font-size:13px}
+
+.addon-list{flex:1;overflow-y:auto;padding:6px}
+.addon-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:all .1s;margin-bottom:2px}
+.addon-item:hover{background:#1f1619}
+.addon-item.active{background:#2d1a23;border:1px solid rgba(255,122,170,0.3)}
+.addon-thumb{width:32px;height:32px;border-radius:4px;background:#1a1416;flex-shrink:0;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center}
+.addon-thumb img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .2s}
+.addon-thumb img.loaded{opacity:1}
+.addon-thumb .icon{font-size:14px;opacity:0.3}
+.addon-thumb .initials{font-size:11px;font-weight:700;color:#ff7aaa;letter-spacing:0.5px;text-transform:uppercase}
+.addon-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.addon-name{font-weight:600;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.addon-meta{font-size:10px;color:#7a5f66;display:flex;gap:6px}
+.addon-size{color:#9a7a85}
+.ws-badge{background:rgba(255,122,170,0.15);color:#ff7aaa;padding:1px 4px;border-radius:2px;font-size:9px;font-weight:600;opacity:0.7}
+
+.explorer-bar{padding:6px 10px;border-bottom:1px solid rgba(255,209,217,0.08);display:flex;align-items:center;gap:8px;background:#1a1416;height:32px;gap:8px}
+.crumbs{flex:1;display:flex;gap:3px;overflow-x:auto;white-space:nowrap;align-items:center}
+.crumb{padding:2px 6px;border-radius:3px;font-size:10px;color:#9a7a85;cursor:pointer;transition:all .1s}
+.crumb:hover{background:#2a1b1f;color:#fff}
+.crumb.active{background:#2d1a23;color:#ff7aaa}
+.crumb-sep{color:#5a444a;font-size:9px}
+
+.file-view{flex:1;display:flex;overflow:hidden}
+.file-list{width:180px;border-right:1px solid rgba(255,209,217,0.08);overflow-y:auto;background:#0f0d0e;display:flex;flex-direction:column}
+.f-item{padding:5px 10px;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .1s;color:#9a7a85}
+.f-item:hover{background:#1a1416;color:#fff}
+.f-item.active{background:rgba(255,122,170,0.1);color:#ff7aaa;border-left:2px solid #ff7aaa;padding-left:8px}
+.f-icon{font-size:12px;opacity:0.5}
+.f-item.folder .f-icon{color:#9a7a85}
+.f-item.file.lua .f-icon{color:#7a9aff}
+.f-item.file.json .f-icon{color:#ffad7a}
+.f-item.file.txt .f-icon{color:#7aff9a}
+
+.editor-area{flex:1;display:flex;flex-direction:column;background:#0f0d0e;position:relative}
+#monaco-container{flex:1;min-height:0}
+.editor-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#3a2a2e;font-weight:600;text-transform:uppercase;letter-spacing:1px;pointer-events:none;gap:8px}
+.editor-placeholder .icon{font-size:32px;opacity:0.2}
+.status-bar{height:22px;background:#1a1416;border-top:1px solid rgba(255,209,217,0.08);display:flex;align-items:center;padding:0 10px;font-size:10px;color:#7a5f66;justify-content:space-between}
+
+.no-results{padding:20px;text-align:center;color:#5a444a;font-style:italic;font-size:11px}
 </style>
 </head>
 <body>
-<div class="wv-app">
-    <div class="wv-col wv-addons" id="col-addons">
-        <h2>Addons</h2>
-        <div class="wv-toolbar">
-            <input id="addon-search" placeholder="Filter..." autocomplete="off" />
-            <button id="refresh-btn" title="Refresh">&#8635;</button>
+<div class="app">
+    <div class="sidebar">
+        <div class="toolbar">
+            <div class="search-box">
+                <input id="search-input" placeholder="Search addons..." spellcheck="false">
+            </div>
+            <button class="btn btn-icon" id="refresh-btn" title="Refresh">↻</button>
         </div>
-        <div class="wv-list" id="addon-list"></div>
+        <div class="addon-list" id="addon-list"></div>
     </div>
-    <div class="wv-resizer" data-resize="0"></div>
-    <div class="wv-col wv-viewer" id="col-viewer">
-        <div class="wv-viewer-bar">
-            <div class="wv-path" id="viewer-path">No file selected</div>
-            <div class="wv-actions">
-                <button id="copy-btn">Copy</button>
-                <button id="workshop-btn">Workshop</button>
+
+    <div class="main">
+        <div class="explorer-bar">
+            <button class="btn btn-icon" id="back-btn" title="Up" disabled>↑</button>
+            <div class="crumbs" id="breadcrumbs"></div>
+            <button class="btn" id="workshop-btn" disabled title="Open Workshop">WS</button>
+            <button class="btn" id="copy-btn" title="Copy">Copy</button>
+        </div>
+        
+        <div class="file-view">
+            <div class="file-list" id="file-list">
+                <div class="f-item" style="justify-content:center;opacity:0.4;font-style:italic;padding:15px 10px">Select addon</div>
+            </div>
+            <div class="editor-area">
+                <div id="monaco-container"></div>
+                <div class="editor-placeholder" id="editor-msg">
+
+                </div>
+                <div class="status-bar">
+                    <span id="status-text">Ready</span>
+                </div>
             </div>
         </div>
-        <div id="code-view"><div class="wv-editor-loading" id="editor-loading">Loading editor...</div></div>
-        <div class="wv-status" id="status-bar"></div>
     </div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
 (function(){
-    const EMPTY_TEXT="-- you need to select one file !\n-- Workshop Viewer";
-    const state={addons:[],currentMount:'',currentAddon:null,currentDir:'',dirs:[],files:[],fileText:'',filePath:'',statusTimer:null,fileExt:'',editor:null,pendingContent:null};
-    const els={addons:document.getElementById('addon-list'),search:document.getElementById('addon-search'),viewerPath:document.getElementById('viewer-path'),codeView:document.getElementById('code-view'),status:document.getElementById('status-bar'),copy:document.getElementById('copy-btn'),workshop:document.getElementById('workshop-btn'),refresh:document.getElementById('refresh-btn'),colAddons:document.getElementById('col-addons'),colViewer:document.getElementById('col-viewer'),editorLoading:document.getElementById('editor-loading')};
+    const state={addons:[],currentMount:null,currentPath:'',editor:null};
+    const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),refreshBtn:document.getElementById('refresh-btn')};
+    
+    function callLua(n,...a){if(window.wv&&window.wv[n])window.wv[n](...a)}
+    function formatBytes(b){if(b===0)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i]}
+    function getInitials(t){return t.split(' ').filter(w=>w.length>0).map(w=>w[0].toUpperCase()).slice(0,4).join('')}
 
-    function callNative(name){if(window.wv&&typeof window.wv[name]==='function'){const args=Array.prototype.slice.call(arguments,1);window.wv[name].apply(window.wv,args);}}
-
-    function extFromPath(path){if(!path)return'';const idx=path.lastIndexOf('.');return idx>=0?path.substring(idx+1).toLowerCase():'';}
-    function languageForExt(ext){const map={lua:'lua',json:'json',md:'markdown',txt:'plaintext',cfg:'ini',ini:'ini',log:'ini',vmt:'ini',vdf:'ini',vmf:'plaintext'};return map[ext]||'plaintext';}
-
-    function setEditorContent(text,ext){
-        state.fileText=text||'';
-        state.fileExt=(ext||state.fileExt||'')||'';
-        if(!state.editor){
-            state.pendingContent={text:state.fileText,ext:state.fileExt};
-            return;
-        }
-        const lang=languageForExt(state.fileExt);
-        const model=state.editor.getModel();
-        if(model){monaco.editor.setModelLanguage(model,lang);}
-        state.editor.setValue(state.fileText);
-    }
-
-    function bootEditor(){
-        if(typeof require==='undefined'){
-            if(els.editorLoading){els.editorLoading.textContent='Editor unavailable';}
-            callNative('Ready');
-            return;
-        }
+    function initEditor(){
         require.config({paths:{'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs'}});
-        window.MonacoEnvironment={getWorkerUrl:function(){const src="self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/'};importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/base/worker/workerMain.js');";const blob=new Blob([src],{type:'text/javascript'});return URL.createObjectURL(blob);}};
+        window.MonacoEnvironment={getWorkerUrl:()=>proxyWorker()};
         require(['vs/editor/editor.main'],function(){
-            monaco.editor.defineTheme('wv-darkpink',{
-                base:'vs-dark',
-                inherit:true,
-                rules:[{token:'',background:'191117'}],
+            monaco.editor.defineTheme('wv-theme',{
+                base:'vs-dark',inherit:true,
+                rules:[{background:'0f0d0e'}],
                 colors:{
-                    'editor.background':'#191117',
-                    'editorLineNumber.foreground':'#8c767b',
-                    'editorLineNumber.activeForeground':'#FFD1D9',
-                    'editorLineHighlightBackground':'#21121D',
-                    'editorGutter.background':'#191117',
+                    'editor.background':'#0f0d0e',
+                    'editorLineNumber.foreground':'#3a2a2e',
                     'editor.selectionBackground':'#2d1a23',
-                    'editor.selectionHighlightBackground':'#23141d',
-                    'editorCursor.foreground':'#FFD1D9',
-                    'editorIndentGuide.background':'#24161d',
-                    'editorIndentGuide.activeBackground':'#2f1c24',
-                    'scrollbarSlider.background':'#3a2f30aa',
-                    'scrollbarSlider.hoverBackground':'#4a3b3caa',
-                    'scrollbarSlider.activeBackground':'#ff7aaaaa'
+                    'editorCursor.foreground':'#ff7aaa',
+                    'editor.lineHighlightBackground':'#141113'
                 }
             });
-            if(els.editorLoading){els.editorLoading.remove();}
-            state.editor=monaco.editor.create(els.codeView,{value:'',language:'plaintext',theme:'wv-darkpink',readOnly:true,minimap:{enabled:false},automaticLayout:true,scrollBeyondLastLine:false,lineNumbers:'on',fontSize:13,fontFamily:"'Fira Code', Consolas, 'Segoe UI Mono', monospace",renderWhitespace:'none',overviewRulerLanes:0});
-            if(state.pendingContent){setEditorContent(state.pendingContent.text,state.pendingContent.ext);state.pendingContent=null;}
-            state.editor.layout();
-            callNative('Ready');
+            state.editor=monaco.editor.create(document.getElementById('monaco-container'),{
+                value:'',language:'plaintext',theme:'wv-theme',
+                readOnly:true,minimap:{enabled:false},
+                fontSize:12,fontFamily:"'Consolas','Fira Code',monospace",
+                automaticLayout:true,lineNumbers:'on',scrollBeyondLastLine:false,
+                padding:{top:8,bottom:8},renderLineHighlight:'all'
+            });
+            callLua('Ready');
         });
     }
-
-    function setAddons(list){state.addons=Array.isArray(list)?list:[];renderAddons();}
+    function proxyWorker(){const s="self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/'};importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/base/worker/workerMain.js');";return URL.createObjectURL(new Blob([s],{type:'text/javascript'}))}
+    function setEditorContent(text,ext){
+        if(!state.editor)return;
+        const lang={lua:'lua',json:'json',md:'markdown',js:'javascript',html:'html',css:'css',xml:'xml'}[ext]||'plaintext';
+        monaco.editor.setModelLanguage(state.editor.getModel(),lang);
+        state.editor.setValue(text);
+        state.editor.setScrollTop(0);
+        els.editorMsg.style.display=text?'none':'flex';
+    }
+    
     function renderAddons(){
-        const filter=(els.search.value||'').toLowerCase();
-        els.addons.innerHTML='';
-        const frag=document.createDocumentFragment();
-        state.addons.filter(addon=>{
-            const isActive=addon.mount===state.currentMount;
-            if(isActive)return true;
-            if(!filter)return true;
-            const hay=((addon.title||addon.file||'')+' '+(addon.wsid||'')).toLowerCase();
-            return hay.includes(filter);
-        }).forEach(addon=>{
-            const isActive=addon.mount===state.currentMount;
-            const wrap=document.createElement('div');
-            wrap.className='wv-item'+(isActive?' active':'');
-
-            const header=document.createElement('div');
-            header.className='wv-file wv-addon';
-            const sizeText=addon.size_human||'';
-            const updatedText=addon.updated_human||'';
-            header.innerHTML=`<div class="wv-addon-header"><div><span>${addon.title||addon.file||'Addon'}</span><br/><small>${sizeText} • ${updatedText}</small></div></div>`;
-            header.addEventListener('click',()=>selectAddon(addon));
-            wrap.appendChild(header);
-
-            if(isActive){
-                const body=document.createElement('div');
-                body.className='wv-addon-body';
-
-                const pathLine=document.createElement('div');
-                pathLine.className='wv-pathline';
-                const crumbs=document.createElement('div');
-                crumbs.className='wv-breadcrumb';
-                const root=document.createElement('div');
-                root.className='wv-crumb'+(state.currentDir===''?' active':'');
-                root.textContent='/';
-                root.addEventListener('click',()=>changeDirectory(''));
-                crumbs.appendChild(root);
-                const segments=state.currentDir.split('/').filter(Boolean);
-                let acc='';
-                segments.forEach((seg,idx)=>{
-                    acc+=seg+'/';
-                    const crumb=document.createElement('div');
-                    crumb.className='wv-crumb'+(idx===segments.length-1?' active':'');
-                    crumb.textContent=seg+'/';
-                    crumb.addEventListener('click',()=>changeDirectory(acc));
-                    crumbs.appendChild(crumb);
-                });
-                pathLine.appendChild(crumbs);
-                const backBtn=document.createElement('button');
-                backBtn.textContent='Back';
-                backBtn.disabled=state.currentDir==='';
-                backBtn.addEventListener('click',()=>changeDirectory(upPath(state.currentDir)));
-                pathLine.appendChild(backBtn);
-                body.appendChild(pathLine);
-
-                const list=document.createElement('div');
-                list.className='wv-files';
-                (state.dirs||[]).forEach(name=>{
-                    const item=document.createElement('div');
-                    item.className='wv-file';
-                    item.innerHTML=`<span>${name}/</span><small>Folder</small>`;
-                    item.addEventListener('click',()=>{
-                        const next=(state.currentDir||'')+name+'/';
-                        changeDirectory(next);
-                    });
-                    list.appendChild(item);
-                });
-                (state.files||[]).forEach(file=>{
-                    const item=document.createElement('div');
-                    item.className='wv-file';
-                    item.innerHTML=`<span>${file.name}</span><small>Open</small>`;
-                    item.addEventListener('click',()=>{
-                        state.fileExt=file.ext||'';
-                        callNative('RequestFile',state.currentMount,file.path);
-                        showStatus('Loading '+file.name+' ...');
-                    });
-                    list.appendChild(item);
-                });
-                body.appendChild(list);
-                wrap.appendChild(body);
+        const term=els.search.value.toLowerCase();
+        els.list.innerHTML='';
+        state.addons.forEach(a=>{
+            if(term&&!a.haystack.includes(term))return;
+            const item=document.createElement('div');
+            item.className=`addon-item ${state.currentMount===a.mount?'active':''}`;
+            item.onclick=()=>selectAddon(a);
+            item.dataset.wsid=a.wsid;
+            item.dataset.mount=a.mount;
+            item.innerHTML=`
+                <div class="addon-thumb">
+                    ${a.imgUrl?`<img src="${a.imgUrl}" class="loaded" draggable="false">`:`<span class="initials">${getInitials(a.title)}</span>`}
+                </div>
+                <div class="addon-info">
+                    <div class="addon-name" title="${a.title}">${a.title}</div>
+                    <div class="addon-meta">
+                        <span class="addon-size">${formatBytes(a.size)}</span>
+                    </div>
+                </div>
+            `;
+            els.list.appendChild(item);
+        });
+        if(els.list.children.length===0)els.list.innerHTML='<div class="no-results">No addons</div>';
+    }
+    
+    function renderFiles(dirs,files){
+        els.fileList.innerHTML='';
+        if(state.currentPath){
+            const item=createFileItem('..','folder',()=>{
+                const p=state.currentPath.split('/');
+                p.pop();
+                requestDir(p.join('/'));
+            });
+            els.fileList.appendChild(item);
+        }
+        (dirs||[]).forEach(d=>els.fileList.appendChild(createFileItem(d,'folder',()=>requestDir((state.currentPath?state.currentPath+'/':'')+d))));
+        (files||[]).forEach(f=>els.fileList.appendChild(createFileItem(f.name,'file',()=>{
+            callLua('RequestFile',state.currentMount,f.path);
+            els.status.textContent='Loading '+f.name+'...';
+        },f.ext)));
+        renderCrumbs();
+    }
+    
+    function createFileItem(name,type,onClick,ext){
+        const div=document.createElement('div');
+        div.className=`f-item ${type} ${ext||''}`;
+        const icon=type==='folder'?'📁':{lua:'📜',json:'⚙️',txt:'📄'}[ext]||'📄';
+        div.innerHTML=`<span class="f-icon">${icon}</span><span>${name}</span>`;
+        div.onclick=(e)=>{
+            if(type==='file'){
+                Array.from(els.fileList.children).forEach(c=>c.classList.remove('active'));
+                div.classList.add('active');
             }
-
-            frag.appendChild(wrap);
-        });
-        els.addons.appendChild(frag);
+            onClick();
+        };
+        return div;
     }
+    
+    function renderCrumbs(){
+        els.crumbs.innerHTML='';
+        const home=document.createElement('span');
+        home.className='crumb '+(!state.currentPath?'active':'');
+        home.textContent='Root';
+        home.onclick=()=>requestDir('');
+        els.crumbs.appendChild(home);
+        if(state.currentPath){
+            let acc='';
+            state.currentPath.split('/').forEach((part,i)=>{
+                els.crumbs.appendChild(document.createTextNode(' / '));
+                acc+=(i>0?'/':'')+part;
+                const cPath=acc;
+                const span=document.createElement('span');
+                span.className='crumb active';
+                span.textContent=part;
+                span.onclick=()=>requestDir(cPath);
+                els.crumbs.appendChild(span);
+            });
+        }
+        els.backBtn.disabled=!state.currentPath;
+    }
+    
     function selectAddon(addon){
-        if(state.currentMount===addon.mount){
-            state.currentMount='';
-            state.currentAddon=null;
-            state.currentDir='';
-            state.dirs=[];
-            state.files=[];
-            state.fileText='';
-            state.filePath='';
-            state.fileExt='';
-            renderAddons();
-            renderFile();
-            return;
-        }
-        state.currentMount=addon.mount||'';
-        state.currentAddon=addon;
-        state.currentDir='';
-        state.dirs=[];
-        state.files=[];
-        state.fileText='';
-        state.filePath='';
-        state.fileExt='';
+        state.currentMount=addon.mount;
+        state.currentPath='';
+        els.workshopBtn.disabled=!addon.wsid;
         renderAddons();
-        renderFile();
-        callNative('SelectAddon',addon.mount||'',addon.title||addon.file||'Addon',addon.wsid||'');
-        changeDirectory('');
+        requestDir('');
+        if(state.editor)state.editor.setValue('');
+        els.editorMsg.innerHTML='';
+        els.editorMsg.style.display='flex';
+        callLua('SelectAddon',addon.mount,addon.title,addon.wsid);
     }
-    function upPath(path){if(!path)return'';const segments=path.split('/').filter(Boolean);if(!segments.length)return'';segments.pop();return segments.length?segments.join('/')+'/':'';}
-    function changeDirectory(path){
-        if(!state.currentMount)return;
-        state.currentDir=path||'';
-        renderAddons();
-        callNative('RequestDirectory',state.currentMount,path||'');
+    
+    function requestDir(path){
+        state.currentPath=path||'';
+        callLua('RequestDirectory',state.currentMount,state.currentPath);
+        els.fileList.innerHTML='<div class="f-item" style="opacity:0.4">Loading...</div>';
     }
-    function renderFile(){
-        const hasFile=!!state.filePath;
-        const prefix=state.currentAddon?(state.currentAddon.title||state.currentAddon.file||'Addon'):'';
-        const pathLabel=hasFile?(prefix!==''?prefix+': ':'')+state.filePath:'No file selected';
-        els.viewerPath.textContent=pathLabel;
-        setEditorContent(hasFile?state.fileText:EMPTY_TEXT,state.fileExt);
-    }
-    function updateDirectory(payload){
-        state.currentMount=payload.mount||state.currentMount;
-        state.currentDir=payload.dir||'';
-        state.dirs=payload.dirs||[];
-        state.files=payload.files||[];
-        if(payload.wsid){state.currentAddon=state.currentAddon||{};state.currentAddon.wsid=payload.wsid;}
-        if(payload.addon){state.currentAddon=state.currentAddon||{};state.currentAddon.title=payload.addon;}
-        renderAddons();
-    }
-    function updateFile(payload){state.fileText=payload.text||'';state.filePath=payload.path||'';state.fileExt=extFromPath(state.filePath);renderFile();}
-    function showStatus(text,level){if(state.statusTimer){clearTimeout(state.statusTimer);state.statusTimer=null;}els.status.textContent=text||'';els.status.className='wv-status'+(level?' '+level:'');if(text){state.statusTimer=setTimeout(()=>{els.status.textContent='';els.status.className='wv-status';},4000);}}
-    window.WVReceive=function(msg){if(!msg||!msg.event)return;const payload=msg.payload||{};switch(msg.event){case'addons':setAddons(payload);break;case'directory':updateDirectory(payload);break;case'file':updateFile(payload);break;case'status':showStatus(payload.text,payload.level);break;}};
-
-    const cols=[els.colAddons,els.colViewer];
-    const resizers=document.querySelectorAll('.wv-resizer');
-    let resizeData=null;
-
-    function initSizes(){
-        const saved=localStorage.getItem('wv-col-sizes');
-        if(saved){
-            try{
-                const sizes=JSON.parse(saved);
-                cols.forEach((col,i)=>{if(sizes[i])col.style.flexBasis=sizes[i];});
-                return;
-            }catch(e){}
+    
+    function updateImage(wsid,url){
+        if(!wsid||!url)return;
+        const a=state.addons.find(x=>x.wsid==wsid);
+        if(a){
+            a.imgUrl=url;
+            const items=document.querySelectorAll('.addon-item');
+            for(let i=0;i<items.length;i++){
+                if(items[i].dataset.mount===a.mount){
+                    const card=items[i].querySelector('.addon-thumb');
+                    if(card)card.innerHTML=`<img src="${url}" class="loaded" draggable="false">`;
+                    break;
+                }
+            }
         }
-        cols[0].style.flexBasis='35%';
-        cols[1].style.flexBasis='65%';
     }
-
-    function saveSizes(){
-        const sizes=cols.map(col=>col.style.flexBasis||'');
-        localStorage.setItem('wv-col-sizes',JSON.stringify(sizes));
-    }
-
-    resizers.forEach(resizer=>{
-        resizer.addEventListener('mousedown',e=>{
-            e.preventDefault();
-            const idx=parseInt(resizer.getAttribute('data-resize'));
-            resizer.classList.add('active');
-            resizeData={
-                idx:idx,
-                startX:e.clientX,
-                leftCol:cols[idx],
-                rightCol:cols[idx+1],
-                leftStart:cols[idx].offsetWidth,
-                rightStart:cols[idx+1].offsetWidth
-            };
-        });
-        resizer.addEventListener('dblclick',()=>{
-            cols[0].style.flexBasis='35%';
-            cols[1].style.flexBasis='65%';
-            saveSizes();
-        });
-    });
-
-    document.addEventListener('mousemove',e=>{
-        if(!resizeData)return;
-        const delta=e.clientX-resizeData.startX;
-        const leftWidth=resizeData.leftStart+delta;
-        const rightWidth=resizeData.rightStart-delta;
-        if(leftWidth>100&&rightWidth>100){
-            resizeData.leftCol.style.flexBasis=leftWidth+'px';
-            resizeData.rightCol.style.flexBasis=rightWidth+'px';
+    
+    window.WVReceive=function(msg){
+        if(!msg||!msg.event)return;
+        const p=msg.payload;
+        switch(msg.event){
+            case 'addons':
+                state.addons=(p||[]).map(a=>{a.haystack=(a.title+' '+a.file).toLowerCase();return a});
+                renderAddons();
+                break;
+            case 'addon_image':
+                updateImage(p.wsid,p.url);
+                break;
+            case 'directory':
+                if(p.mount!==state.currentMount)return;
+                renderFiles(p.dirs,p.files);
+                break;
+            case 'file':
+                setEditorContent(p.text,p.path.split('.').pop());
+                els.status.textContent='Loaded '+p.path;
+                break;
+            case 'status':
+                els.status.textContent=p.text;
+                if(p.level==='error')els.status.style.color='#ff6d7a';
+                else els.status.style.color='';
+                setTimeout(()=>els.status.style.color='',3000);
         }
-    });
-
-    document.addEventListener('mouseup',()=>{
-        if(resizeData){
-            resizers.forEach(r=>r.classList.remove('active'));
-            saveSizes();
-            resizeData=null;
-        }
-    });
-
+    };
+    
     els.search.addEventListener('input',renderAddons);
-    els.refresh.addEventListener('click',()=>callNative('RefreshAddons'));
-    els.copy.addEventListener('click',()=>{const txt=state.editor?state.editor.getValue():state.fileText||'';callNative('CopyText',txt);});
-    els.workshop.addEventListener('click',()=>{if(state.currentAddon&&state.currentAddon.wsid){callNative('OpenWorkshop',state.currentAddon.wsid);}});
-    document.addEventListener('DOMContentLoaded',()=>{initSizes();bootEditor();});
-    initSizes();
+    els.refreshBtn.onclick=()=>callLua('RefreshAddons');
+    els.workshopBtn.onclick=()=>{
+        const a=state.addons.find(x=>x.mount===state.currentMount);
+        if(a&&a.wsid)callLua('OpenWorkshop',a.wsid);
+    };
+    els.copyBtn.onclick=()=>{if(state.editor)callLua('CopyText',state.editor.getValue())};
+    els.backBtn.onclick=()=>{
+        if(!state.currentPath)return;
+        const p=state.currentPath.split('/');
+        p.pop();
+        requestDir(p.join('/'));
+    };
+    
+    initEditor();
 })();
 </script>
 </body>
 </html>
-]]
+    ]]
 end

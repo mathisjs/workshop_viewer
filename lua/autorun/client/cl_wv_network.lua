@@ -30,10 +30,16 @@ function WV.RequestFile(mountId, rel)
     net.SendToServer()
 end
 
+function WV.RequestAllImages()
+    net.Start("WV_RequestAllImages")
+    net.SendToServer()
+end
+
 net.Receive("WV_Addons", function()
     local t = WV.ReadCompressedTable() or {}
     if WV.FillAddons then
         WV.FillAddons(t)
+        WV.RequestAllImages()
     end
 end)
 
@@ -54,7 +60,6 @@ net.Receive("WV_FileStart", function()
         rel = rel,
         total = total,
         chunks = chunks,
-        got = 0,
         buf = {}
     }
     WV.PendingPath = rel
@@ -94,6 +99,12 @@ net.Receive("WV_FileChunk", function()
 
         WV.FileBuf[token] = nil
     end
+end)
+
+net.Receive("WV_Image", function()
+    local wsid = net.ReadString()
+    local url = net.ReadString()
+    WV.SendEvent("addon_image", { wsid = wsid, url = url })
 end)
 
 net.Receive("WV_Error", function()

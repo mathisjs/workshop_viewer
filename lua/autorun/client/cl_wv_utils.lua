@@ -8,24 +8,6 @@ function WV.ReadCompressedTable()
     return json and util.JSONToTable(json) or nil
 end
 
-function WV.FormatBytes(num)
-    num = tonumber(num or 0) or 0
-    if num <= 0 then return "0 B" end
-    local units = { "B", "KB", "MB", "GB" }
-    local i = 1
-    while num >= 1024 and i < #units do
-        num = num / 1024
-        i = i + 1
-    end
-    return string.format("%.1f %s", num, units[i])
-end
-
-function WV.FormatDate(ts)
-    ts = tonumber(ts or 0) or 0
-    if ts <= 0 then return "?" end
-    return os.date("%d/%m/%Y %H:%M", ts)
-end
-
 function WV.NormalizeDir(path)
     path = tostring(path or "")
     path = path:gsub("\\", "/")
