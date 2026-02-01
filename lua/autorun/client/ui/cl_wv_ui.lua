@@ -113,6 +113,7 @@ end
 
 concommand.Add("workshop_viewer", openViewer)
 
+
 hook.Add("PopulateToolMenu", "WV_AddToolMenu", function()
     spawnmenu.AddToolMenuOption("Utilities", "Admin", "WorkshopViewer", "Workshop Viewer", "", "", function(panel)
         panel:ClearControls()
