@@ -65,6 +65,16 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
 .f-item.file.txt .f-icon{color:#7aff9a}
 
 .editor-area{flex:1;display:flex;flex-direction:column;background:#0f0d0e;position:relative}
+.tabs-bar{display:flex;align-items:center;background:#1a1416;border-bottom:1px solid rgba(255,209,217,0.08);min-height:28px;overflow-x:auto}
+.tab{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:10px;color:#9a7a85;background:transparent;border:none;cursor:pointer;transition:all .1s;white-space:nowrap;position:relative;min-width:0}
+.tab:hover{color:#fff;background:#2a1b1f}
+.tab.active{color:#ff7aaa;background:#2d1a23;border-bottom:1px solid #ff7aaa}
+.tab-name{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.tab-close{width:14px;height:14px;border-radius:2px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all .1s;font-size:12px}
+.tab:hover .tab-close{opacity:0.5}
+.tab-close:hover{background:#ff7aaa;color:#0f0d0e;opacity:1}
+.tab-new{width:24px;height:20px;display:flex;align-items:center;justify-content:center;color:#7a5f66;cursor:pointer;border-left:1px solid rgba(255,209,217,0.08);flex-shrink:0}
+.tab-new:hover{color:#fff;background:#2a1b1f}
 #monaco-container{flex:1;min-height:0}
 .editor-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#3a2a2e;font-weight:600;text-transform:uppercase;letter-spacing:1px;pointer-events:none;gap:8px}
 .editor-placeholder .icon{font-size:32px;opacity:0.2}
@@ -98,6 +108,7 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
                 <div class="f-item" style="justify-content:center;opacity:0.4;font-style:italic;padding:15px 10px">Select addon</div>
             </div>
             <div class="editor-area">
+                <div class="tabs-bar" id="tabs-bar"></div>
                 <div id="monaco-container"></div>
                 <div class="editor-placeholder" id="editor-msg">
 
@@ -113,8 +124,8 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
 (function(){
-    const state={addons:[],currentMount:null,currentPath:'',editor:null,bookmarks:new Set()};
-    const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),refreshBtn:document.getElementById('refresh-btn')};
+    const state={addons:[],currentMount:null,currentPath:'',editor:null,bookmarks:new Set(),tabs:[],activeTabId:null};
+    const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),refreshBtn:document.getElementById('refresh-btn'),tabsBar:document.getElementById('tabs-bar')};
     
     function callLua(n,...a){if(window.wv&&window.wv[n])window.wv[n](...a)}
     function formatBytes(b){if(b===0)return'0 B';const k=1024,s=['B','KB','MB','GB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+' '+s[i]}
@@ -146,13 +157,64 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
         });
     }
     function proxyWorker(){const s="self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/'};importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/base/worker/workerMain.js');";return URL.createObjectURL(new Blob([s],{type:'text/javascript'}))}
-    function setEditorContent(text,ext){
-        if(!state.editor)return;
+    function generateTabId(){return Date.now().toString(36)+Math.random().toString(36).substr(2)}
+    function createTab(path, content, ext){
         const lang={lua:'lua',json:'json',md:'markdown',js:'javascript',html:'html',css:'css',xml:'xml'}[ext]||'plaintext';
-        monaco.editor.setModelLanguage(state.editor.getModel(),lang);
-        state.editor.setValue(text);
-        state.editor.setScrollTop(0);
-        els.editorMsg.style.display=text?'none':'flex';
+        const model=monaco.editor.createModel(content, lang);
+        const tab={id:generateTabId(),path:path||'',content:content||'',ext:ext||'',model:model};
+        state.tabs.push(tab);
+        state.activeTabId=tab.id;
+        renderTabs();
+        return tab;
+    }
+    function closeTab(tabId, event){
+        if(event)event.stopPropagation();
+        const idx=state.tabs.findIndex(t=>t.id===tabId);
+        if(idx===-1)return;
+        const closingTab=state.tabs[idx];
+        if(closingTab.model)closingTab.model.dispose();
+        if(state.activeTabId===tabId){
+            if(state.tabs.length===1){
+                state.tabs=[];
+                state.activeTabId=null;
+                if(state.editor){
+                    state.editor.setModel(monaco.editor.createModel('', 'plaintext'));
+                }
+                els.editorMsg.style.display='flex';
+                els.editorMsg.innerHTML='';
+            }else{
+                state.tabs.splice(idx,1);
+                state.activeTabId=state.tabs[Math.min(idx, state.tabs.length-1)].id;
+                const newTab=state.tabs.find(t=>t.id===state.activeTabId);
+                if(newTab&&newTab.model)state.editor.setModel(newTab.model);
+            }
+        }else{
+            state.tabs.splice(idx,1);
+        }
+        renderTabs();
+    }
+    function switchTab(tabId){
+        if(state.activeTabId===tabId)return;
+        state.activeTabId=tabId;
+        const tab=state.tabs.find(t=>t.id===tabId);
+        if(tab&&state.editor&&tab.model){
+            state.editor.setModel(tab.model);
+            state.editor.setScrollTop(0);
+            els.editorMsg.style.display='none';
+            els.status.textContent=tab.path||'Loaded file';
+        }
+        renderTabs();
+    }
+    function renderTabs(){
+        els.tabsBar.innerHTML='';
+        state.tabs.forEach(tab=>{
+            const btn=document.createElement('button');
+            btn.className=`tab ${tab.id===state.activeTabId?'active':''}`;
+            btn.innerHTML=`<span class="tab-name">${tab.path.split('/').pop()||'Untitled'}</span><span class="tab-close">×</span>`;
+            btn.onclick=()=>switchTab(tab.id);
+            btn.querySelector('.tab-close').onclick=(e)=>closeTab(tab.id, e);
+            els.tabsBar.appendChild(btn);
+        });
     }
     
     function renderAddons(){
@@ -253,9 +315,6 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
         els.workshopBtn.disabled=!addon.wsid;
         renderAddons();
         requestDir('');
-        if(state.editor)state.editor.setValue('');
-        els.editorMsg.innerHTML='';
-        els.editorMsg.style.display='flex';
         callLua('SelectAddon',addon.mount,addon.title,addon.wsid);
     }
     
@@ -313,7 +372,18 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
                 renderFiles(p.dirs,p.files);
                 break;
             case 'file':
-                setEditorContent(p.text,p.path.split('.').pop());
+                const ext=p.path.split('.').pop();
+                const existingTab=state.tabs.find(t=>t.path===p.path);
+                if(existingTab){
+                    switchTab(existingTab.id);
+                }else{
+                    createTab(p.path, p.text, ext);
+                    if(state.editor){
+                        const newTab=state.tabs.find(t=>t.id===state.activeTabId);
+                        if(newTab&&newTab.model)state.editor.setModel(newTab.model);
+                        els.editorMsg.style.display='none';
+                    }
+                }
                 els.status.textContent='Loaded '+p.path;
                 break;
             case 'status':
