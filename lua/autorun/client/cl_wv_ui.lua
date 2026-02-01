@@ -101,6 +101,14 @@ local function openViewer()
         SetClipboardText(text)
         surface.PlaySound("garrysmod/ui_click.wav")
     end)
+
+    html:AddFunction("wv", "LoadBookmarks", function()
+        WV.SendBookmarks()
+    end)
+
+    html:AddFunction("wv", "SaveBookmarks", function(bookmarksTable)
+        WV.SaveBookmarks(bookmarksTable)
+    end)
 end
 
 concommand.Add("workshop_viewer", openViewer)

@@ -41,6 +41,10 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
 .addon-meta{font-size:10px;color:#7a5f66;display:flex;gap:6px}
 .addon-size{color:#9a7a85}
 .ws-badge{background:rgba(255,122,170,0.15);color:#ff7aaa;padding:1px 4px;border-radius:2px;font-size:9px;font-weight:600;opacity:0.7}
+.bookmark-btn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.3;transition:all .15s;flex-shrink:0;border-radius:3px;font-size:13px;color:#7a5f66}
+.bookmark-btn:hover{opacity:0.6;background:#2a1b1f}
+.bookmark-btn.bookmarked{opacity:1;color:#ffd700}
+.bookmark-section{padding:6px 8px;font-size:10px;font-weight:600;color:#5a444a;text-transform:uppercase;letter-spacing:0.5px}
 
 .explorer-bar{padding:6px 10px;border-bottom:1px solid rgba(255,209,217,0.08);display:flex;align-items:center;gap:8px;background:#1a1416;height:32px;gap:8px}
 .crumbs{flex:1;display:flex;gap:3px;overflow-x:auto;white-space:nowrap;align-items:center}
@@ -109,7 +113,7 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
 (function(){
-    const state={addons:[],currentMount:null,currentPath:'',editor:null};
+    const state={addons:[],currentMount:null,currentPath:'',editor:null,bookmarks:new Set()};
     const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),refreshBtn:document.getElementById('refresh-btn')};
     
     function callLua(n,...a){if(window.wv&&window.wv[n])window.wv[n](...a)}
@@ -154,13 +158,14 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
     function renderAddons(){
         const term=els.search.value.toLowerCase();
         els.list.innerHTML='';
-        state.addons.forEach(a=>{
+        const sorted=[...state.addons].sort((a,b)=>(state.bookmarks.has(b.mount)?1:0)-(state.bookmarks.has(a.mount)?1:0)||a.title.localeCompare(b.title));
+        sorted.forEach(a=>{
             if(term&&!a.haystack.includes(term))return;
             const item=document.createElement('div');
             item.className=`addon-item ${state.currentMount===a.mount?'active':''}`;
-            item.onclick=()=>selectAddon(a);
             item.dataset.wsid=a.wsid;
             item.dataset.mount=a.mount;
+            const isBookmarked=state.bookmarks.has(a.mount);
             item.innerHTML=`
                 <div class="addon-thumb">
                     ${a.imgUrl?`<img src="${a.imgUrl}" class="loaded" draggable="false">`:`<span class="initials">${getInitials(a.title)}</span>`}
@@ -171,7 +176,16 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
                         <span class="addon-size">${formatBytes(a.size)}</span>
                     </div>
                 </div>
+                <div class="bookmark-btn ${isBookmarked?'bookmarked':''}" data-mount="${a.mount}">★</div>
             `;
+            item.onclick=(e)=>{
+                if(e.target.classList.contains('bookmark-btn'))return;
+                selectAddon(a);
+            };
+            item.querySelector('.bookmark-btn').onclick=(e)=>{
+                e.stopPropagation();
+                toggleBookmark(a.mount);
+            };
             els.list.appendChild(item);
         });
         if(els.list.children.length===0)els.list.innerHTML='<div class="no-results">No addons</div>';
@@ -251,6 +265,17 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
         els.fileList.innerHTML='<div class="f-item" style="opacity:0.4">Loading...</div>';
     }
     
+    function toggleBookmark(mount){
+        if(state.bookmarks.has(mount)){
+            state.bookmarks.delete(mount);
+        }else{
+            state.bookmarks.add(mount);
+        }
+        const arr=Array.from(state.bookmarks);
+        callLua('SaveBookmarks',arr);
+        renderAddons();
+    }
+    
     function updateImage(wsid,url){
         if(!wsid||!url)return;
         const a=state.addons.find(x=>x.wsid==wsid);
@@ -273,6 +298,11 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
         switch(msg.event){
             case 'addons':
                 state.addons=(p||[]).map(a=>{a.haystack=(a.title+' '+a.file).toLowerCase();return a});
+                renderAddons();
+                callLua('LoadBookmarks');
+                break;
+            case 'bookmarks':
+                state.bookmarks=new Set(p||[]);
                 renderAddons();
                 break;
             case 'addon_image':
