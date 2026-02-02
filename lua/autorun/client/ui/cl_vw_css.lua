@@ -21,6 +21,8 @@ html,body{margin:0;padding:0;height:100%;font-family:'Segoe UI',system-ui,sans-s
 .btn:disabled{opacity:0.3;cursor:not-allowed}
 .btn:active:not(:disabled){transform:translateY(1px)}
 .btn-icon{padding:4px 6px;font-size:13px}
+.btn-close{background:#3d1f1f;border-color:rgba(255,100,100,0.3);color:#ff7a7a;padding:4px 8px;font-size:14px;font-weight:bold}
+.btn-close:hover{background:#5a2a2a;border-color:#ff7a7a;color:#fff}
 
 .addon-list{flex:1;overflow-y:auto;padding:6px}
 .addon-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:all .1s;margin-bottom:2px}

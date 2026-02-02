@@ -39,6 +39,7 @@ local function openViewer()
     f:SetTitle(" ")
     f:SetSize(math.min(ScrW()*0.9, 1600), math.min(ScrH()*0.9, 900))
     f:Center()
+    f:ShowCloseButton(false)
     f:MakePopup()
     WV.Frame = f
     f.OnRemove = function()
@@ -49,6 +50,27 @@ local function openViewer()
     f.Paint = function(self,w,h)
         surface.SetDrawColor(0,0,0,0)
         surface.DrawRect(0, 0, w, h)
+    end
+
+    local loader = vgui.Create("DPanel", f)
+    loader:SetSize(f:GetWide(), f:GetTall())
+    loader:SetPos(0, 0)
+    loader:SetZPos(100)
+    loader.Paint = function(self, w, h)
+        surface.SetDrawColor(30, 30, 30, 255)
+        surface.DrawRect(0, 0, w, h)
+        local time = CurTime() * 3
+        local centerX, centerY = w/2, h/2
+        local radius = 40
+        for i = 0, 7 do
+            local angle = math.rad(i * 45 + time * 50)
+            local alpha = math.max(50, 255 - (i * 25))
+            local x = centerX + math.cos(angle) * radius
+            local y = centerY + math.sin(angle) * radius
+            surface.SetDrawColor(100, 150, 255, alpha)
+            surface.DrawRect(x - 4, y - 4, 8, 8)
+        end
+        draw.SimpleText("Loading...", "DermaDefaultBold", centerX, centerY + 60, Color(200, 200, 200), TEXT_ALIGN_CENTER)
     end
 
     local html = vgui.Create("DHTML", f)
@@ -70,6 +92,11 @@ local function openViewer()
         WV.WebReady = true
         WV.FlushEvents()
         WV.RequestAddons()
+        if IsValid(loader) then
+            loader:AlphaTo(0, 0.3, 0, function()
+                loader:Remove()
+            end)
+        end
     end)
 
     html:AddFunction("wv", "RefreshAddons", function()
@@ -108,6 +135,20 @@ local function openViewer()
 
     html:AddFunction("wv", "SaveBookmarks", function(bookmarksTable)
         WV.SaveBookmarks(bookmarksTable)
+    end)
+
+    html:AddFunction("wv", "Close", function()
+        if IsValid(WV.Frame) then
+            WV.Frame:Remove()
+        end
+    end)
+
+    timer.Simple(5, function()
+        if IsValid(loader) and IsValid(html) then
+            loader:AlphaTo(0, 0.3, 0, function()
+                loader:Remove()
+            end)
+        end
     end)
 end
 

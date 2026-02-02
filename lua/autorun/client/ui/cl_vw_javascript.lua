@@ -4,7 +4,7 @@ function WV.GetJavaScript()
     return [[
 (function(){
     const state={addons:[],currentMount:null,currentPath:'',editor:null,bookmarks:new Set(),tabs:[],activeTabId:null};
-    const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),refreshBtn:document.getElementById('refresh-btn'),tabsBar:document.getElementById('tabs-bar')};
+    const els={list:document.getElementById('addon-list'),fileList:document.getElementById('file-list'),search:document.getElementById('search-input'),crumbs:document.getElementById('breadcrumbs'),status:document.getElementById('status-text'),editorMsg:document.getElementById('editor-msg'),backBtn:document.getElementById('back-btn'),workshopBtn:document.getElementById('workshop-btn'),copyBtn:document.getElementById('copy-btn'),closeBtn:document.getElementById('close-btn'),refreshBtn:document.getElementById('refresh-btn'),tabsBar:document.getElementById('tabs-bar')};
     
     const textExtensions=new Set(['lua','txt','json','md','cfg','ini','vmt','vmf','vdf','log','qc','smd']);
     const binaryExtensions=new Set(['vtf','mp3','wav','ogg','bsp','vpk','mdl','phy','vvd','vtx','ani','png','jpg','jpeg','tga','gma']);
@@ -301,6 +301,7 @@ function WV.GetJavaScript()
         p.pop();
         requestDir(p.join('/'));
     };
+    els.closeBtn.onclick=()=>callLua('Close');
     
     initEditor();
 })();

@@ -28,6 +28,7 @@ function WV.GetHTML()
             <div class="crumbs" id="breadcrumbs"></div>
             <button class="btn" id="workshop-btn" disabled title="Open Workshop">WS</button>
             <button class="btn" id="copy-btn" title="Copy">Copy</button>
+            <button class="btn btn-close" id="close-btn" title="Close">×</button>
         </div>
         
         <div class="file-view">
