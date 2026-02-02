@@ -101,7 +101,14 @@ function WV.GetJavaScript()
     function renderAddons(){
         const term=els.search.value.toLowerCase();
         els.list.innerHTML='';
-        const sorted=[...state.addons].sort((a,b)=>(state.bookmarks.has(b.mount)?1:0)-(state.bookmarks.has(a.mount)?1:0)||a.title.localeCompare(b.title));
+        const sorted=[...state.addons].sort((a,b)=>{
+            const bmDiff=(state.bookmarks.has(b.mount)?1:0)-(state.bookmarks.has(a.mount)?1:0);
+            if(bmDiff!==0)return bmDiff;
+            const aSize=Number(a.size)||0;
+            const bSize=Number(b.size)||0;
+            if(bSize!==aSize)return bSize-aSize;
+            return a.title.localeCompare(b.title);
+        });
         sorted.forEach(a=>{
             if(term&&!a.haystack.includes(term))return;
             const item=document.createElement('div');
@@ -146,7 +153,10 @@ function WV.GetJavaScript()
         }
         (dirs||[]).forEach(d=>els.fileList.appendChild(createFileItem(d,'folder',()=>requestDir((state.currentPath?state.currentPath+'/':'')+d))));
         (files||[]).forEach(f=>els.fileList.appendChild(createFileItem(f.name,'file',()=>{
-            if(textExtensions.has(f.ext)){
+            if(f.ext==='vtf'||f.ext==='png'||f.ext==='jpg'||f.ext==='jpeg'||f.ext==='tga'){
+                callLua('OpenVTF',f.path);
+                els.status.textContent='Opening viewer for '+f.name+'...';
+            }else if(textExtensions.has(f.ext)){
                 callLua('RequestFile',state.currentMount,f.path);
                 els.status.textContent='Loading '+f.name+'...';
             }else{

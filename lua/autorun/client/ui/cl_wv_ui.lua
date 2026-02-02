@@ -143,6 +143,16 @@ local function openViewer()
         end
     end)
 
+    html:AddFunction("wv", "OpenVTF", function(vtfPath)
+        if vtfPath and vtfPath ~= "" then
+            local fullPath = vtfPath
+            if WV.CurrentBase and WV.CurrentBase ~= "" then
+                fullPath = WV.CurrentBase .. "/" .. vtfPath
+            end
+            RunConsoleCommand("workshop_viewer_vtf", fullPath)
+        end
+    end)
+
     timer.Simple(5, function()
         if IsValid(loader) and IsValid(html) then
             loader:AlphaTo(0, 0.3, 0, function()
